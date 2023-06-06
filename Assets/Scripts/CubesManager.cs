@@ -28,7 +28,7 @@ public class CubesManager : MonoBehaviour
     }
     [Tooltip("Set the PowerCubes types and properties")]
     public List<CubeProperties> powerCubes = new List<CubeProperties>(); //list of cube types and properties
-    //[HideInInspector]
+    [HideInInspector]
     public List<CubeController> activeCubes = new List<CubeController>(); //used to destroy cubes in scene on restart
 
 

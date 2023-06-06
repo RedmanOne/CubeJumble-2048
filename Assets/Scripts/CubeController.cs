@@ -37,8 +37,8 @@ public class CubeController : MonoBehaviour
             {
                 Debug.Log(velocityToTouched.magnitude);
                 Destroy(touchedOne.gameObject);
-                SetNewPower(myPowerIndex + 1);
                 GameManager.Instance.ScoreUpdate(power/2);
+                SetNewPower(myPowerIndex + 1);
             }
         }
     }

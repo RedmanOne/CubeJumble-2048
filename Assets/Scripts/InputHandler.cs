@@ -23,7 +23,7 @@ public class InputHandler : MonoBehaviour
     {
         if (!CubeController && !GameManager.Instance.roundIsOver) //disable the controls if there is no current cube
             return;
-        runningOnMobile = true;
+
         if (runningOnMobile)
         {
             TouchControls();

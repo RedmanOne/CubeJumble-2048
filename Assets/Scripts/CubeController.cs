@@ -29,11 +29,16 @@ public class CubeController : MonoBehaviour
         if (collision.gameObject.tag == "PowerCube")
         {
             CubeController touchedOne = collision.gameObject.GetComponent<CubeController>();
-            if (touchedOne.power == power && rgBody.velocity.magnitude > .75f)
+
+            Vector3 direction = touchedOne.transform.position - transform.position;
+            Vector3 velocityToTouched = Vector3.Project(rgBody.velocity, direction);
+
+            if (touchedOne.power == power && velocityToTouched.magnitude > .35f)
             {
+                Debug.Log(velocityToTouched.magnitude);
                 Destroy(touchedOne.gameObject);
                 SetNewPower(myPowerIndex + 1);
-                GameManager.Instance.ScoreUpdate(power);
+                GameManager.Instance.ScoreUpdate(power/2);
             }
         }
     }

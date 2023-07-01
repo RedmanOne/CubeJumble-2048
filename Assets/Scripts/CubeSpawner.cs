@@ -6,39 +6,61 @@ public class CubeSpawner : MonoBehaviour
 {
 
     [Range(0, 100), Tooltip("Po2 / Po4 drop chance")]
-    public int dropChance = 75;
-    public GameObject cubePrefab;
+    [SerializeField] private int dropChance = 75;
+    [SerializeField] private GameObject cubePrefab;
 
-    private InputHandler inputHandler;
 
-    private void Start()
+    private void Awake()
     {
-        inputHandler = GetComponent<InputHandler>();
-        inputHandler.CubeSpawner = this;
+        EventBus.onStartNewGame += SpawnDelay;       
+        EventBus.onObjectLaunched += SpawnDelay;
     }
 
-    public void SpawnNewCube()
+    private void SpawnDelay()
     {
-        if (GameManager.Instance.cubesAmountLeft < 0)
-            return;
+        if(ObjectsManager.Instance.ActiveObjectsCount() < GameSettings.Instance.MaxObjectsAmount())
+        {
+            StartCoroutine(Delay(.25f));
+        }
+        else
+        {
+            StartCoroutine(Delay(1.25f));
+        }
+    }
 
+    private IEnumerator Delay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if(ObjectsManager.Instance.ActiveObjectsCount() < GameSettings.Instance.MaxObjectsAmount())
+        {
+            SpawnNewObject();
+        }
+        else
+        {
+            EventBus.onEndGame?.Invoke();
+        }
+    }
 
-        GameObject newCube = Instantiate(cubePrefab);
+    private void SpawnNewObject()
+    {
+
+        GameObject newCube = Instantiate(cubePrefab, GameSettings.Instance.GarbageTransform());
         CubeController newCubeController = newCube.GetComponent<CubeController>();
 
-        inputHandler.CubeController = newCubeController;
+        EventBus.onObjectSpawned?.Invoke(newCubeController);
 
         int randValue = Random.Range(0, 100);
 
-        if (randValue <= dropChance) //then set to Po2
+        if (randValue <= dropChance)
         {
-            newCubeController.SetNewPower(0); //set new power by index in powerCubes list
+            //set to Power 2
+            newCubeController.SetNewPower(0);
         }
-        else //set to Po4
+        else
         {
-            newCubeController.SetNewPower(1); //set new power by index
+            //set to Power 4
+            newCubeController.SetNewPower(1);
         }
     }
-
 }
 

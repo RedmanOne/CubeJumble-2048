@@ -1,83 +1,100 @@
-﻿
+﻿using System;
 using UnityEngine;
 
-public class CubeController : MonoBehaviour
-{
-    public int myPowerIndex { get; set; }
-    public int power { get; set; }
 
-    private float dragSensitivity = 10;
+[RequireComponent(typeof(Animator), typeof(Rigidbody), typeof(BoxCollider))]
+public class CubeController : MonoBehaviour, IThrowingObject
+{
+    private int myPowerIndex;
+    private int power;
+
+    private float dragSensitivity = 7f;
     private Vector3 clampedPosition; //used to define a borders of cube`s movement
     private bool readyToLaunch = false; //used to reset cube`s transforms before launch
-    public Animator animator;
-    public Rigidbody rgBody;
-    public BoxCollider boxCllider;
+    private Animator animator;
+    private Rigidbody rgBody;
+    private BoxCollider boxCollider;
 
 
     private void Start()
     {
-        CubesManager.Instance.activeCubes.Add(this);
-        dragSensitivity = GameManager.Instance.dragSensitivitySetting;
+        ObjectsManager.Instance.AddActiveObject(this);
+
         clampedPosition = new Vector3(0, 0.2f, 0.2f);
     }
 
+    // Merging
     private void OnCollisionEnter(Collision collision)
     {
-        if (transform.position.z < 0.5f) //don`t merge if close to start position
+        if (transform.position.z < 0.5f) //don`t merge if near start position
             return;
 
         if (collision.gameObject.tag == "PowerCube")
         {
             CubeController touchedOne = collision.gameObject.GetComponent<CubeController>();
 
-            Vector3 direction = touchedOne.transform.position - transform.position;
-            Vector3 velocityToTouched = Vector3.Project(rgBody.velocity, direction);
+            float dotProduct = Vector3.Dot(rgBody.velocity.normalized, touchedOne.rgBody.velocity.normalized);
+            float collisionImpulse = rgBody.velocity.magnitude - touchedOne.rgBody.velocity.magnitude * dotProduct;
 
-            if (touchedOne.power == power && velocityToTouched.magnitude > .35f)
+            if (rgBody.velocity.magnitude < touchedOne.rgBody.velocity.magnitude)
+                return; // only 1 of 2 colliders will execute merging
+
+            if (touchedOne.power == power && collisionImpulse > .1f)
             {
-                Debug.Log(velocityToTouched.magnitude);
                 Destroy(touchedOne.gameObject);
-                GameManager.Instance.ScoreUpdate(power/2);
+                EventBus.onObjectMerge?.Invoke(power);
                 SetNewPower(myPowerIndex + 1);
             }
         }
     }
 
-    public void SetNewPower(int newPowerIndex)
+    public void SetNewPower(int index)
     {
-        myPowerIndex = newPowerIndex;
-        GetComponent<MeshRenderer>().material.mainTexture = CubesManager.Instance.powerCubes[newPowerIndex].powerTexture; //set texture of the next power
-        power = CubesManager.Instance.powerCubes[newPowerIndex].power;
-    }
+        int newPower;
+        Texture newTexture;
 
+        ObjectsManager.Instance.GetPowerByIndex(index, out newPower, out newTexture);
+
+        myPowerIndex = index;
+        GetComponent<MeshRenderer>().material.mainTexture = newTexture; //set texture of the next power
+        power = newPower;
+    }
 
     public void Move(float dragVelocity)
     {
-        if (!readyToLaunch)
+        if (!readyToLaunch) 
         {
-            animator.enabled = false;
-            transform.rotation = new Quaternion();
-            transform.localScale = new Vector3(1,1,1);
-            readyToLaunch = true;
+            PrepareToLaunch();
         }
 
+        //Movement
         float moveDistance = dragVelocity * dragSensitivity;
 
-        //Movement
         transform.Translate(moveDistance, 0, 0, Space.World);
         clampedPosition.x = Mathf.Clamp(transform.position.x, -0.65f, 0.65f); //keep object within the borders
         transform.position = clampedPosition;
     }
 
-    public void Launch()
+    public void Throw()
     {
-        boxCllider.enabled = true;
+        PrepareToLaunch();
+        rgBody = GetComponent<Rigidbody>();
         rgBody.isKinematic = false;
-        rgBody.AddForce(Vector3.forward * GameManager.Instance.launchForce, ForceMode.Impulse);
+        rgBody.AddForce(Vector3.forward * 15f, ForceMode.Impulse);
+        EventBus.onObjectLaunched?.Invoke();
+    }
+
+    private void PrepareToLaunch()
+    {
+        GetComponent<BoxCollider>().enabled = true;
+        GetComponent<Animator>().enabled = false;
+        transform.rotation = new Quaternion();
+        transform.localScale = new Vector3(1, 1, 1);
+        readyToLaunch = true;
     }
 
     private void OnDestroy()
     {
-        CubesManager.Instance.activeCubes.Remove(this);
+        ObjectsManager.Instance.RemoveActiveObject(this);
     }
 }

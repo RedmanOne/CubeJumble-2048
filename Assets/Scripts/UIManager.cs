@@ -3,51 +3,52 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Scores))]
 public class UIManager : MonoBehaviour
 {
     [Header("In-game UI references")]
-    public Image cubesAmountFillImage;
-    public Text cubesAmountText;
-    public Text scoreText, highScoreText;
+    [SerializeField] private Image cubesAmountFillImage;
+    [SerializeField] private Text cubesAmountText;
+    [SerializeField] private Text scoreText, highScoreText;
 
-    [Header("Menu UI references")]
-    public GameObject menuPanel;
-    public Text menuScoreText, menuHighScoreText;
+    [Header("Menu references")]
+    [SerializeField] private GameObject menuPanel;
+    [SerializeField] private Text menuScoreText, menuHighScoreText;
 
-    private void Start()
+
+    private void Awake()
     {
-        InvokeRepeating("InterfaceUpdate",0,0.5f);
+        EventBus.onEndGame += OpenMenu;
     }
 
-    private void InterfaceUpdate()
+    public void ScoreUpdate(int score, int highscore)
     {
-        if (GameManager.Instance.roundIsOver)
-        {
-            if(!menuPanel.activeSelf)
-                menuPanel.SetActive(true);
-            menuHighScoreText.text = $"Highest Score: {GameManager.Instance.highscore}";
-            menuScoreText.text = $"Current Score: {GameManager.Instance.score}";
+        highScoreText.text = $"Top: { highscore }";
+        scoreText.text = $"Score: { score }";
+    }
 
+    public void FinalScore(int score, int highscore)
+    {
+        menuHighScoreText.text = $"Highest Score: { highscore }";
+        menuScoreText.text = $"Current Score: { score }";
+        OpenMenu();
+    }
+
+    public void ObjectsAmountUpdate(int objectsLeft)
+    {
+        if (cubesAmountFillImage == null)
             return;
-        }
-
-        ScoreUIUpdate();
-        CubesAmountUIUpdate();
-    }
-
-    private void ScoreUIUpdate()
-    {
-        highScoreText.text = $"Top: {GameManager.Instance.highscore}";
-        scoreText.text = $"Score: {GameManager.Instance.score}";
-    }
-
-    private void CubesAmountUIUpdate()
-    {
-        cubesAmountFillImage.fillAmount = (float)GameManager.Instance.cubesAmountLeft / 25;
-        cubesAmountText.text = $"{GameManager.Instance.cubesAmountLeft}";
-        if (GameManager.Instance.cubesAmountLeft < 0)
+        cubesAmountFillImage.fillAmount = (float)objectsLeft / GameSettings.Instance.MaxObjectsAmount();
+        cubesAmountText.text = $"{objectsLeft}";
+        if (objectsLeft < 1)
         {
             cubesAmountText.text = "-";
         }
+    }
+
+    private void OpenMenu()
+    {
+        if (!menuPanel.activeSelf)
+            menuPanel.SetActive(true);
     }
 }

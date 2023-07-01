@@ -3,94 +3,95 @@ using UnityEngine;
 
 public class InputHandler : MonoBehaviour
 {
-    public CubeController CubeController { get; set; } //controller script on current cube
-    public CubeSpawner CubeSpawner { get; set; }
+
+    private IThrowingObject throwingObject; //current controller
 
     private Vector3 inputPosition, lastInputPosition;
     private float velocity;
     private bool runningOnMobile = false;
-    private KeyCode movementInput = KeyCode.Mouse0; //input for desktop/editor
-    private bool touchIsOverUI = false; //used because TouchInput doesn`t work correctly with IsPointerOverGameObject()
 
     private void Awake()
     {
         //setting controls depending on platform
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
             runningOnMobile = true;
+
+        EventBus.onObjectSpawned += SetNewThrowingObject;
     }
 
     private void Update()
     {
-        if (!CubeController && !GameManager.Instance.roundIsOver) //disable the controls if there is no current cube
+        if (throwingObject == null)
             return;
 
         if (runningOnMobile)
         {
             TouchControls();
         }
-        else //running in editor or desktop
+        else
         {
             MouseControls();
         }
     }
 
+    private void SetNewThrowingObject(IThrowingObject obj)
+    {
+        throwingObject = obj;
+    }
+
 
     private void TouchControls()
     {
-        if (Input.touchCount < 1) //break the function if there is no touch
-            return;
+        if (Input.touchCount <= 0)
+            return;   
 
         Touch touch = Input.GetTouch(0);
         inputPosition = touch.position;
 
-        if (touch.phase == TouchPhase.Began) //finger down
+        if (touch.phase == TouchPhase.Began)
         {
-            touchIsOverUI = false;
-
-            if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
-                touchIsOverUI = true;
-
-            if(CubeController)
-                CubeController.Move(0);
+            throwingObject.Move(0);
             lastInputPosition = touch.position;
         }
-        else if(touch.phase == TouchPhase.Moved && CubeController) //finger move
+        else if (touch.phase == TouchPhase.Moved)
         {
-            velocity = (inputPosition.x - lastInputPosition.x) / Screen.width; //making velocity equal for any screen width
-            CubeController.Move(velocity);
+
+            velocity = (inputPosition.x - lastInputPosition.x) / Screen.width;
+            throwingObject.Move(velocity);
             lastInputPosition = inputPosition;
         }
-        else if(touch.phase == TouchPhase.Ended && !touchIsOverUI && CubeController) //finger up
+        else if(touch.phase == TouchPhase.Ended)
         {
-            CubeController.Launch();
-            CubeController = null;
-            CubeSpawner.SpawnNewCube();
+
+            throwingObject.Throw();
+            throwingObject = null;
         }
     }
 
 
     private void MouseControls()
     {
-        if (EventSystem.current.IsPointerOverGameObject()) //break the function if mouse is over UI elements
+        if (EventSystem.current.IsPointerOverGameObject())
             return;
 
         inputPosition = Input.mousePosition;
 
-        if (Input.GetKeyDown(movementInput)) //mouse down
+        if (Input.GetMouseButtonDown(0))
         {
+            throwingObject.Move(0);
             lastInputPosition = Input.mousePosition;
         }
-        else if (Input.GetKey(movementInput)) //mouse hold - moving the cube
+        else if (Input.GetMouseButton(0))
         {
-            velocity = (inputPosition.x - lastInputPosition.x) / Screen.width; //making velocity equal for any screen width
-            CubeController.Move(velocity);
+
+            velocity = (inputPosition.x - lastInputPosition.x) / Screen.width;
+            throwingObject.Move(velocity);
             lastInputPosition = inputPosition;
         }
-        else if(Input.GetKeyUp(movementInput)) //mouse up 
+        else if(Input.GetMouseButtonUp(0))
         {
-            CubeController.Launch();
-            CubeController = null;
-            CubeSpawner.SpawnNewCube();
+            throwingObject.Throw();
+            throwingObject = null;
         }
     }
 

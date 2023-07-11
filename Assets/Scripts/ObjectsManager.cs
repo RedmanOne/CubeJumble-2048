@@ -1,26 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class ObjectsManager : MonoBehaviour
 {
-    //initialize singleton
-    public static ObjectsManager Instance { get; set; }
+
+    private GameSettings gameSettings;
 
     private void Awake()
     {
-        //check if there is another instance
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
-
         EventBus.onEndGame += ClearTheScene;
     }
+
+    [Inject]
+    public void Construct(GameSettings gameSettings)
+    {
+        this.gameSettings = gameSettings;
+    }
+
 
     [System.Serializable]
     private class CubeProperties
@@ -63,7 +61,7 @@ public class ObjectsManager : MonoBehaviour
 
         activeObjects.Clear();
 
-        Destroy(GameSettings.Instance.GarbageTransform().gameObject);
+        Destroy(gameSettings.GarbageTransform().gameObject);
     }
 
 }

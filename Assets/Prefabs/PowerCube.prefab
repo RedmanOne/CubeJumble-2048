@@ -143,3 +143,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6fa15ba2dde67e4091ec43a759d2db5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 3352460470924602572}
+  rgBody: {fileID: 8306988446513022171}
+  boxCollider: {fileID: 7987847557153156493}

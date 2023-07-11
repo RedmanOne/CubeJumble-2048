@@ -12,7 +12,6 @@ public class InputHandler : MonoBehaviour
 
     private void Awake()
     {
-        //setting controls depending on platform
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
             runningOnMobile = true;
 

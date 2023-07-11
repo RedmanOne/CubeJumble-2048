@@ -5,19 +5,9 @@ using UnityEngine;
 public class GameSettings : MonoBehaviour
 {
     //initialize singleton
-    public static GameSettings Instance { get; set; }
     private void Awake()
     {
         Application.targetFrameRate = 60;
-        //check if there is another instance
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }
     }
 
     private void Start()

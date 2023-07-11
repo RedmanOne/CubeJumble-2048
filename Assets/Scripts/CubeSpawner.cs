@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class CubeSpawner : MonoBehaviour
 {
@@ -9,6 +10,18 @@ public class CubeSpawner : MonoBehaviour
     [SerializeField] private int dropChance = 75;
     [SerializeField] private GameObject cubePrefab;
 
+    private DiContainer diContainer;
+    private GameSettings gameSettings;
+    private ObjectsManager objectsManager;
+
+
+    [Inject]
+    public void Construct(DiContainer diContainer, GameSettings gameSettings, ObjectsManager objectsManager)
+    {
+        this.diContainer = diContainer;
+        this.gameSettings = gameSettings;
+        this.objectsManager = objectsManager;
+    }
 
     private void Awake()
     {
@@ -18,7 +31,7 @@ public class CubeSpawner : MonoBehaviour
 
     private void SpawnDelay()
     {
-        if(ObjectsManager.Instance.ActiveObjectsCount() < GameSettings.Instance.MaxObjectsAmount())
+        if(objectsManager.ActiveObjectsCount() < gameSettings.MaxObjectsAmount())
         {
             StartCoroutine(Delay(.25f));
         }
@@ -31,7 +44,7 @@ public class CubeSpawner : MonoBehaviour
     private IEnumerator Delay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        if(ObjectsManager.Instance.ActiveObjectsCount() < GameSettings.Instance.MaxObjectsAmount())
+        if(objectsManager.ActiveObjectsCount() < gameSettings.MaxObjectsAmount())
         {
             SpawnNewObject();
         }
@@ -43,8 +56,7 @@ public class CubeSpawner : MonoBehaviour
 
     private void SpawnNewObject()
     {
-
-        GameObject newCube = Instantiate(cubePrefab, GameSettings.Instance.GarbageTransform());
+        var newCube = diContainer.InstantiatePrefab(cubePrefab, gameSettings.GarbageTransform());
         CubeController newCubeController = newCube.GetComponent<CubeController>();
 
         EventBus.onObjectSpawned?.Invoke(newCubeController);

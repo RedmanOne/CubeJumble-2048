@@ -1,21 +1,34 @@
 ﻿using UnityEngine.EventSystems;
 using UnityEngine;
+using Zenject;
 
 public class InputHandler : MonoBehaviour
 {
 
     private IThrowingObject throwingObject; //current controller
-
+    private SignalBus signalBus;
     private Vector3 inputPosition, lastInputPosition;
     private float velocity;
     private bool runningOnMobile = false;
 
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        this.signalBus = signalBus;
+        signalBus.Subscribe<ObjectSpawnedSignal>(x => SetNewThrowingObject(x.throwingObject));
+    }
+
     private void Awake()
     {
-        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
+        if(SystemInfo.deviceType == DeviceType.Handheld)
+        {
             runningOnMobile = true;
-
-        EventBus.onObjectSpawned += SetNewThrowingObject;
+        }
+        else
+        {
+            runningOnMobile = false;
+        }
     }
 
     private void Update()
@@ -92,6 +105,11 @@ public class InputHandler : MonoBehaviour
             throwingObject.Throw();
             throwingObject = null;
         }
+    }
+
+    private void OnDestroy()
+    {
+        signalBus.TryUnsubscribe<ObjectSpawnedSignal>(x => SetNewThrowingObject(x.throwingObject));
     }
 
 }

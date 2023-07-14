@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -7,16 +6,15 @@ public class ObjectsManager : MonoBehaviour
 {
 
     private GameSettings gameSettings;
-
-    private void Awake()
-    {
-        EventBus.onEndGame += ClearTheScene;
-    }
+    private SignalBus signalBus;
 
     [Inject]
-    public void Construct(GameSettings gameSettings)
+    public void Construct(GameSettings gameSettings, SignalBus signalBus)
     {
         this.gameSettings = gameSettings;
+        this.signalBus = signalBus;
+
+        signalBus.Subscribe<EndGameSignal>(ClearTheScene);
     }
 
 
@@ -35,18 +33,20 @@ public class ObjectsManager : MonoBehaviour
     {
         activeObjects.Add(newObj);
 
-        EventBus.onObjectsCountChanged?.Invoke(ActiveObjectsCount());
+        signalBus.Fire(new ObjectsCountChangedSignal() { count = ActiveObjectsCount() });
     }
     public void RemoveActiveObject(IThrowingObject obj)
     {
         activeObjects.Remove(obj);
 
-        EventBus.onObjectsCountChanged?.Invoke(ActiveObjectsCount());
+        signalBus.Fire(new ObjectsCountChangedSignal() { count = ActiveObjectsCount() });
     }
+
     public int ActiveObjectsCount()
     {
         return activeObjects.Count;
     }
+
     public void GetPowerByIndex(int index, out int power, out Texture powerTexture)
     {
         power = powerObjects[index].power;
@@ -62,6 +62,11 @@ public class ObjectsManager : MonoBehaviour
         activeObjects.Clear();
 
         Destroy(gameSettings.GarbageTransform().gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        signalBus.TryUnsubscribe<EndGameSignal>(ClearTheScene);
     }
 
 }

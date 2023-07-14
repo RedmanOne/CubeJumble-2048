@@ -6,12 +6,14 @@ public class ManagerInstaller : MonoInstaller
     [SerializeField] private ObjectsManager objectsManager;
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private UIManager uiManager;
+    [SerializeField] private InterfaceValuesHandler interfaceValuesHandler;
 
     public override void InstallBindings()
     {
         BindGameSettings();
         BindObjectsManager();
         BindUIManager();
+        BindInterfaceValuesHandler();
     }
 
     private void BindUIManager()
@@ -34,6 +36,14 @@ public class ManagerInstaller : MonoInstaller
     {
         Container.Bind<GameSettings>()
             .FromInstance(gameSettings)
+            .AsSingle()
+            .NonLazy();
+    }
+
+    private void BindInterfaceValuesHandler()
+    {
+        Container.Bind<InterfaceValuesHandler>()
+           .FromInstance(interfaceValuesHandler)
             .AsSingle()
             .NonLazy();
     }

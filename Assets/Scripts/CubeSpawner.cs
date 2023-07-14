@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -13,23 +12,22 @@ public class CubeSpawner : MonoBehaviour
     private DiContainer diContainer;
     private GameSettings gameSettings;
     private ObjectsManager objectsManager;
+    private SignalBus signalBus;
 
 
     [Inject]
-    public void Construct(DiContainer diContainer, GameSettings gameSettings, ObjectsManager objectsManager)
+    public void Construct(DiContainer diContainer, GameSettings gameSettings, ObjectsManager objectsManager, SignalBus signalBus)
     {
         this.diContainer = diContainer;
         this.gameSettings = gameSettings;
         this.objectsManager = objectsManager;
+        this.signalBus = signalBus;
+
+        signalBus.Subscribe<StartNewGameSignal>(SpawnWithDelay);
+        signalBus.Subscribe<CanSpawnNewSignal>(SpawnWithDelay);
     }
 
-    private void Awake()
-    {
-        EventBus.onStartNewGame += SpawnDelay;       
-        EventBus.onObjectLaunched += SpawnDelay;
-    }
-
-    private void SpawnDelay()
+    private void SpawnWithDelay()
     {
         if(objectsManager.ActiveObjectsCount() < gameSettings.MaxObjectsAmount())
         {
@@ -50,7 +48,7 @@ public class CubeSpawner : MonoBehaviour
         }
         else
         {
-            EventBus.onEndGame?.Invoke();
+            signalBus.Fire<EndGameSignal>();
         }
     }
 
@@ -59,7 +57,7 @@ public class CubeSpawner : MonoBehaviour
         var newCube = diContainer.InstantiatePrefab(cubePrefab, gameSettings.GarbageTransform());
         CubeController newCubeController = newCube.GetComponent<CubeController>();
 
-        EventBus.onObjectSpawned?.Invoke(newCubeController);
+        signalBus.Fire(new ObjectSpawnedSignal() { throwingObject = newCubeController } );
 
         int randValue = Random.Range(0, 100);
 
@@ -73,6 +71,12 @@ public class CubeSpawner : MonoBehaviour
             //set to Power 4
             newCubeController.SetNewPower(1);
         }
+    }
+
+    private void OnDestroy()
+    {
+        signalBus.TryUnsubscribe<StartNewGameSignal>(SpawnWithDelay);
+        signalBus.TryUnsubscribe<CanSpawnNewSignal>(SpawnWithDelay);
     }
 }
 

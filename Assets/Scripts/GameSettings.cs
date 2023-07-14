@@ -1,14 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using Zenject;
 
 public class GameSettings : MonoBehaviour
 {
-    //initialize singleton
+
     private void Awake()
     {
         Application.targetFrameRate = 60;
     }
+
+    private SignalBus signalBus;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        this.signalBus = signalBus;
+    }
+
 
     private void Start()
     {
@@ -39,12 +47,10 @@ public class GameSettings : MonoBehaviour
     {
         if (_runtimeGarbage != null)
         {
-            EventBus.onEndGame?.Invoke();
+            signalBus.Fire<EndGameSignal>();
             return;
         }
         _runtimeGarbage = Instantiate(new GameObject("RuntimeGarbage"), Vector3.zero, Quaternion.identity).transform;
-        EventBus.onStartNewGame?.Invoke();
+        signalBus.Fire<StartNewGameSignal>();
     }
-
-
 }

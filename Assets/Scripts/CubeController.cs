@@ -1,12 +1,11 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Zenject;
 
 [RequireComponent(typeof(Animator), typeof(Rigidbody), typeof(BoxCollider))]
 public class CubeController : MonoBehaviour, IThrowingObject
 {
     private int myPowerIndex;
-    private int power;
+    private int myPower;
     private float dragSensitivity = 7f;
     private Vector3 clampedPosition; //used to define a borders of cube`s movement
     private bool readyToLaunch = false; //used to reset cube`s transforms before launch
@@ -14,14 +13,20 @@ public class CubeController : MonoBehaviour, IThrowingObject
     [SerializeField] private Animator animator;
     [SerializeField] private Rigidbody rgBody;
     [SerializeField] private BoxCollider boxCollider;
-    private ObjectsManager ObjectsManager;
+
+    private ObjectsManager objectsManager;
+    private SignalBus signalBus;
 
     [Inject]
-    public void Construct(ObjectsManager objectsManager)
+    public void Construct(ObjectsManager objectsManager, SignalBus signalBus)
     {
-        ObjectsManager = objectsManager;
-        ObjectsManager.AddActiveObject(this);
+        this.objectsManager = objectsManager;
+        this.signalBus = signalBus;
+    }
 
+    private void Start()
+    {
+        objectsManager.AddActiveObject(this);
         clampedPosition = new Vector3(0, 0.2f, 0.2f);
     }
 
@@ -40,10 +45,10 @@ public class CubeController : MonoBehaviour, IThrowingObject
             if (rgBody.velocity.magnitude < touchedOne.rgBody.velocity.magnitude)
                 return;
 
-            if (touchedOne.power == power && collisionImpulse > .1f)
+            if (touchedOne.myPower == myPower && collisionImpulse > .1f)
             {
                 Destroy(touchedOne.gameObject);
-                EventBus.onObjectMerge?.Invoke(power);
+                signalBus.Fire(new ObjectMergeSignal() { power = myPower});
                 SetNewPower(myPowerIndex + 1);
             }
         }
@@ -54,11 +59,11 @@ public class CubeController : MonoBehaviour, IThrowingObject
         int newPower;
         Texture newTexture;
 
-        ObjectsManager.GetPowerByIndex(index, out newPower, out newTexture);
+        objectsManager.GetPowerByIndex(index, out newPower, out newTexture);
 
         myPowerIndex = index;
         GetComponent<MeshRenderer>().material.mainTexture = newTexture;
-        power = newPower;
+        myPower = newPower;
     }
 
     public void Move(float dragVelocity)
@@ -80,7 +85,7 @@ public class CubeController : MonoBehaviour, IThrowingObject
         PrepareToLaunch();
         rgBody.isKinematic = false;
         rgBody.AddForce(Vector3.forward * 15f, ForceMode.Impulse);
-        EventBus.onObjectLaunched?.Invoke();
+        signalBus.Fire<CanSpawnNewSignal>();
     }
 
     private void PrepareToLaunch()
@@ -94,6 +99,6 @@ public class CubeController : MonoBehaviour, IThrowingObject
 
     private void OnDestroy()
     {
-        ObjectsManager.RemoveActiveObject(this);
+        objectsManager.RemoveActiveObject(this);
     }
 }

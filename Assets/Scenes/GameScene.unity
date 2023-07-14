@@ -227,6 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc5a6a58882cf1f438796bec791f2fd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainMenuPanel: {fileID: 1828316413}
 --- !u!114 &126714669
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,6 +240,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b549cac0d7c8f14b8f3496d877ceac0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cubesAmountFillImage: {fileID: 727492297}
+  cubesAmountText: {fileID: 1616163785}
+  scoreText: {fileID: 680345146}
+  highScoreText: {fileID: 391510767}
+  menuScoreText: {fileID: 1614911893}
+  menuHighScoreText: {fileID: 753480498}
 --- !u!114 &126714670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,13 +258,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f48215879a63a7b41bb5e41b71690fe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubesAmountFillImage: {fileID: 727492297}
-  cubesAmountText: {fileID: 1616163785}
-  scoreText: {fileID: 680345146}
-  highScoreText: {fileID: 391510767}
-  menuPanel: {fileID: 1828316411}
-  menuScoreText: {fileID: 1614911893}
-  menuHighScoreText: {fileID: 753480498}
+  countersUI: {fileID: 126714669}
+  menusUI: {fileID: 126714668}
 --- !u!1 &391510765
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,50 +575,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 611082304}
   m_CullTransparentMesh: 0
---- !u!1 &650690757
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 650690759}
-  - component: {fileID: 650690758}
-  m_Layer: 0
-  m_Name: LastChanceHandler
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &650690758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 650690757}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf321828afdbbfa479e55c19a8640f5f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &650690759
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 650690757}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &663615240
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,8 +1160,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 391510766}
   - {fileID: 680345145}
+  - {fileID: 391510766}
   m_Father: {fileID: 1913270525}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1308,10 +1266,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1828316411}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 126714670}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: CloseMainMenu
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1463,6 +1421,7 @@ GameObject:
   - component: {fileID: 1138871983}
   - component: {fileID: 1138871986}
   - component: {fileID: 1138871981}
+  - component: {fileID: 1138871987}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1561,6 +1520,18 @@ MonoBehaviour:
     powerTexture: {fileID: 2800000, guid: 5411966890c8c4748bd61530f6f4dc6d, type: 3}
   - power: 2048
     powerTexture: {fileID: 2800000, guid: 18dfe72e07b778b4581106f00684cdca, type: 3}
+--- !u!114 &1138871987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138871980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11b11231db87eed4eb8744e930eec7f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1405905337
 GameObject:
   m_ObjectHideFlags: 0
@@ -1627,7 +1598,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1444014826
 GameObject:
@@ -2180,8 +2151,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 753480497}
   - {fileID: 1614911892}
+  - {fileID: 753480497}
   - {fileID: 1018950716}
   - {fileID: 532874812}
   - {fileID: 1840834336}
@@ -2356,8 +2327,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+      - m_Target: {fileID: 1138871987}
+        m_TargetAssemblyTypeName: InterfaceValuesHandler, Assembly-CSharp
         m_MethodName: ClearHighScore
         m_Mode: 1
         m_Arguments:
@@ -2643,7 +2614,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectsManager: {fileID: 1138871986}
   gameSettings: {fileID: 1138871984}
-  uiManager: {fileID: 0}
+  uiManager: {fileID: 126714670}
+  interfaceValuesHandler: {fileID: 1138871987}
 --- !u!4 &2005516976
 Transform:
   m_ObjectHideFlags: 0
